@@ -1,0 +1,37 @@
+(a+b)-(c*d)/(a-b)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function add(a,b) {
+            return a+b;
+        }
+        function sub(a,b){
+            return a-b;
+        }
+        function mul(a,b){
+            return a*b;
+        }
+        function div(a,b){
+            return a/b;
+        }
+        var a,b,c,d;
+        a=1;
+        b=2;
+        c=3;
+        d=4;
+        var a1=add(a,b);
+        var b1=mul(c,d);
+        var c1=sub(a,b);
+        var b2=div(b1,c1);
+        var c2=sub(a1,b2);
+
+        alert(c2);
+    </script>
+</body>
+</html>

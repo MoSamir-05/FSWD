@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+
+    <style>
+        *{
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background-color: coral;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .box{
+            background-color: cyan;
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 20px;
+            width: 220px;
+            text-align: center;
+        }
+
+        input{
+            width: 100%;
+            padding: 6px;
+            margin: 6px 0;
+            border-radius: 5px;
+            border: 1px solid #000;
+        }
+
+        button{
+            width: 40px;
+            height: 30px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: aliceblue;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover{
+            background-color: #000;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<script>
+    function add() {
+        var num1 = Number(document.getElementsByName("num1")[0].value);
+        var num2 = Number(document.getElementsByName("num2")[0].value);
+        num3 = num1 + num2;
+        alert(num1 + " + " + num2 + " = " + num3)
+    }
+    function sub() {
+        var num1 = Number(document.getElementsByName("num1")[0].value);
+        var num2 = Number(document.getElementsByName("num2")[0].value);
+        num3 = num1 - num2;
+        alert(num1 + " - " + num2 + " = " + num3)
+    }
+    function mul() {
+        var num1 = Number(document.getElementsByName("num1")[0].value);
+        var num2 = Number(document.getElementsByName("num2")[0].value);
+        num3 = num1 * num2;
+        alert(num1 + " x " + num2 + " = " + num3)
+    }
+    function div() {
+        var num1 = Number(document.getElementsByName("num1")[0].value);
+        var num2 = Number(document.getElementsByName("num2")[0].value);
+        num3 = num1 / num2;
+        alert(num1 + " / " + num2 + " = " + num3)
+    }
+</script>
+
+<div class="box">
+    enter number <br>
+    <input type="number" name="num1"><br>
+
+    enter 2nd number <br>
+    <input type="number" name="num2"><br>
+
+    <button onclick="add()">+</button>
+    <button onclick="sub()">-</button>
+    <button onclick="mul()">x</button>
+    <button onclick="div()">/</button>
+</div>
+
+</body>
+</html>

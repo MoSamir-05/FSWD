@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        function fun(){
+            var num1=Number(document.getElementsByName("num1")[0].value)
+            if(num1%2==0){
+                document.writeln("Number is Even");
+            }
+            else{
+                document.writeln("Number is odd");
+            }
+        }
+    </script>
+</head>
+<body>
+    Enter number : <input type="number" name="num1">
+    <button onclick="fun()">Click</button>
+</body>
+</html>
