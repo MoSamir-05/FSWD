@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        const squ=s=>s*s;
+        const sub=(a,b)=>a-b;
+        const mul=(a,b)=>2*a*b;
+        const add=(a,b)=>a+b;
+
+        var x=10,y=9;
+        var x_squ=squ(x);
+        var y_squ=squ(y);
+        var m=mul(x,y);
+        
+        var plus=add(x_squ,y_squ);
+        var ans=sub(plus,m);
+        alert(ans);
+    </script>
+</body>
+</html>
