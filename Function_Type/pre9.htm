@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        class company{
+            constructor(){
+                this.name="";
+                this.type="";
+                this.profit="";
+            }
+            setdata(name,type,profit){
+                this.name=name;
+                this.type=type;
+                this.profit=profit;
+            }
+            getdata(){
+                console.log("Name :",this.name);
+                console.log("Type :",this.type);
+                console.log("Profit :",this.profit);
+            }
+        }
+        c1=new company();
+        c1.setdata("tata","car_manu",1000000);
+        c1.getdata();
+    </script>
+</body>
+</html>
