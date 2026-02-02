@@ -1,0 +1,75 @@
+<!-- Q4 -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        class cricketer {
+            constructor(cid, c_name) {
+                this.cid = cid;
+                this.c_name = c_name;
+            }
+            setcountry(country) {
+                this.country = country;
+            }
+            getcountry() {
+                return this.country;
+            }
+        }
+
+        class bowler extends cricketer {
+            constructor(cid, c_name, wickets, matches) {
+                super(cid, c_name);
+                this.wickets = wickets;
+                this.matches = matches;
+            }
+            setbowler(wickets, matches) {
+                this.wickets = wickets;
+                this.matches = matches;
+            }
+            getbowler() {
+                console.log("id", this.cid);
+                console.log("Name", this.c_name);
+                console.log("Country", this.country);
+                console.log("Wickets", this.wickets);
+                console.log("Matches", this.matches);
+            }
+        }
+
+        class Batsman extends cricketer {
+            constructor(cid, c_name, runs, matches) {
+                super(cid, c_name);
+                this.runs = runs;
+                this.matches = matches;
+            }
+            setBatsman(runs, matches) {
+                this.runs = runs;
+                this.matches = matches;
+            }
+            getbatsman() {
+                console.log("ID:", this.cid);
+                console.log("Name:", this.cname);
+                console.log("Country:", this.country);
+                console.log("Runs:", this.runs);
+                console.log("Matches:", this.matches);
+            }
+        }
+        let bowler1 = new bowler(1, "Jasprit Bumrah", 150, 80);
+        bowler1.setcountry("India");
+        bowler1.getbowler();
+
+        console.log("----------------");
+
+        let batsman1 = new Batsman(2, "Virat Kohli", 12000, 260);
+        batsman1.setcountry("India");
+        batsman1.getbatsman();
+    </script>
+</body>
+
+</html>
