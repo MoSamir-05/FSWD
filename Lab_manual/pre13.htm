@@ -1,6 +1,7 @@
+<!-- 
 x2+y2+xy
 (x+y)-(y+z)
-x2+y2-2xy
+x2+y2-2xy -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +11,26 @@ x2+y2-2xy
 </head>
 <body>
     <script>
+        const pow=(r)=>r*r;
+        const add=(a,b)=>a+b;
+        const sub=(a,b)=>a-b;
+        const mul=(a,b)=>a*b;
+
+        var x=10,y=20;
+        
+        pow1=pow(x);
+        pow2=pow(y);
+
+        mul1=mul(x,y);
+
+        add1=add(pow1,pow2);
+        add2=add(pow2,mul1);
+        total=add(pow1,add2)
+
+       
+        console.log("X2+Y2+XY = ",total);
+
+
         
     </script>
 </body>
