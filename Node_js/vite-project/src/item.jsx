@@ -1,5 +1,5 @@
 function Item(props){
-    return<>
+    return(<>
         <table>
             <tr>
                 <th>Name</th>
@@ -11,4 +11,5 @@ function Item(props){
             <td>{props.type}</td>
         </table>
     </>
+    );
 }
