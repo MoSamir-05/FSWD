@@ -1,18 +1,88 @@
-table {
-  border-collapse: collapse;
-  width: 300px;
-  margin: auto;
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+#root { height: 100%; }
+
+.app{
+  min-height: 100vh;
+  background: #f6f7fb;
+  padding: 18px;
 }
 
-td {
-  padding: 20px;
+.layout{
+  width: 100%;
+  height: calc(100vh - 36px);
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border: 1px solid #e6e6ee;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.headerCell, .footerCell{
+  padding: 18px 22px;
   text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
-
-table, tr, td {
-  border: 1px solid black;
+.headerCell{
+  background: linear-gradient(90deg, #111827, #1f2937);
+  color: #fff;
+  font-size: 22px;
 }
-tr:hover{
-    background-color: cyan;
+
+.footerCell{
+  background: #111827;
+  color: #cbd5e1;
+  font-size: 16px;
+}
+
+.mainRow{
+  height: 100%;
+}
+
+.menuCell{
+  width: 60px;             
+  vertical-align: top;
+  padding: 16px;
+  background: #0b1220;
+  color: #e5e7eb;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.contentCell{
+  vertical-align: top;
+  padding: 18px;
+  background: #ffffff;
+}
+
+.menuCell h1, .contentCell h1, .headerCell h1, .footerCell h1{
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+}
+
+.menuCell h1{
+  font-size: 18px;
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+
+.contentCell{
+  font-size: 18px;
+}
+
+.menuCell a{
+  color: #e5e7eb;
+  text-decoration: none;
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.06);
+}
+.menuCell a:hover{
+  background: rgba(255,255,255,0.12);
 }
