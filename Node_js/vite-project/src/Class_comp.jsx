@@ -1,15 +1,23 @@
-// import React from "react";
-// class std extends React.Component {
-//     constructor (name,age){
-//         this.name=name;
-//         this.age=age;
-//     }
-//     greet(){
-//         <h2>
-//             (this.name);
-//         </h2>
-            
-//     }
-// }
+import React, { Component } from "react";
 
-// export default Std;
+class Std extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "Samir",
+      age: 22
+    };
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>{"Name : "+this.state.name}</h2>
+        <h3>{"Age : "+this.state.age}</h3>
+      </div>
+    );
+  }
+}
+
+export default Std;
