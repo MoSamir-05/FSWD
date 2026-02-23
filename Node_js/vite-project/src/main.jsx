@@ -13,6 +13,7 @@ import Class_comp from './Class_comp.jsx'
 import Std from './Class_comp.jsx'
 import SimpleStudentTable from './event.jsx'
 import Color_bt from './Class_compo.jsx'
+import Fav_color from './Hook_fun.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* <App /> */}
@@ -20,7 +21,8 @@ createRoot(document.getElementById('root')).render(
     {/* <Home /> */}
     {/* <Std /> */}
     {/* <SimpleStudentTable/> */}
-    <Color_bt/>
+    {/* <Color_bt/> */}
+    <Fav_color/>
     
   </StrictMode>,
 )
