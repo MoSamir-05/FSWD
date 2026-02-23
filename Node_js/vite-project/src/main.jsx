@@ -11,13 +11,16 @@ import Menu from './menu.jsx'
 import './main.css'
 import Class_comp from './Class_comp.jsx'
 import Std from './Class_comp.jsx'
-
+import SimpleStudentTable from './event.jsx'
+import Color_bt from './Class_compo.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* <App /> */}
     {/* <Mycomp/> */}
     {/* <Home /> */}
-    <Std />
+    {/* <Std /> */}
+    {/* <SimpleStudentTable/> */}
+    <Color_bt/>
     
   </StrictMode>,
 )
