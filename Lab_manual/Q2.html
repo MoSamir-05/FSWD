@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        class Student {
+            constructor() {
+                this.name = "";
+                this.rno = "";
+            }
+            setStudent(name,rno) {
+                this.name = name;
+                this.rno = rno;
+            }
+            getStudent() {
+                console.log("Name : ",this.name);
+                console.log("Roll Number : ",this.rno);
+            }
+        }
+        let s1=new Student();
+        s1.setStudent("samir",45);
+        s1.getStudent();
+    </script>
+</body>
+
+</html>

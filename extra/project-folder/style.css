@@ -1,0 +1,35 @@
+ body {
+    margin: 0;
+    overflow: hidden;
+    background: #111;
+    font-family: Arial, sans-serif;
+}
+
+canvas {
+    display: block;
+}
+
+#ui {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+    color: white;
+}
+
+button {
+    padding: 8px 12px;
+    border: none;
+    background: #444;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background: #666;
+}
+
+#score {
+    margin-top: 10px;
+}

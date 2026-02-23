@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POT HAMMER · getting over it vibe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #0c0c10;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, monospace;
+        }
+        .game-container {
+            background: #1a1a22;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 0 1px #4a3f5a;
+        }
+        canvas {
+            display: block;
+            width: 1000px;
+            height: 600px;
+            border-radius: 24px;
+            background: #1e1b28;
+            box-shadow: 0 0 0 2px #2f2840, 0 20px 30px black;
+            cursor: none;
+        }
+        .ui-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #ddd8f0;
+            padding: 0 0.5rem;
+        }
+        .score {
+            background: #2f2840;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            border: 1px solid #6d5a8c;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 5px 0 #0b0812;
+            color: #f3e9ff;
+        }
+        .restart-btn {
+            background: #332d42;
+            border: none;
+            color: #f0eaff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.5rem 2rem;
+            border-radius: 40px;
+            border: 1px solid #8774b0;
+            box-shadow: 0 6px 0 #211c2c;
+            cursor: pointer;
+            transition: 0.07s ease;
+        }
+        .restart-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 1px 0 #211c2c;
+        }
+        .hint {
+            color: #a792cc;
+            font-size: 0.9rem;
+            padding-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="ui-bar">
+        <div class="score">HEIGHT: <span id="heightValue">0</span>m</div>
+        <div class="hint">🖱️ mouse moves hammer · climb up · fall = reset progress</div>
+        <button class="restart-btn" id="restartButton">↻ RESTART</button>
+    </div>
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+</div>
+
+<script>
+    (function() {
+        // --------------------------------------------------------------
+        // CANVAS & CONTEXT
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const heightSpan = document.getElementById('heightValue');
+
+        // --------------------------------------------------------------
+        // FIXED TIMESTEP (60 fps physics)
+        const FIXED_DT = 1000 / 60;  // 16.66ms
+        let lastTimestamp = 0;
+        let accumulator = 0;
+
+        // --------------------------------------------------------------
+        // GLOBAL STATE
+        let gameRunning = true;
+        let restartRequested = false;  // flag to rebuild world
+
+        // --------------------------------------------------------------
+        // PHYSICS PARAMETERS
+        const GRAVITY = 0.3;
+        const FRICTION_AIR = 0.99;      // slight air drag
+        const GROUND_FRICTION = 0.85;    // friction when touching ground
+        const HAMMER_LENGTH = 70;
+        const HAMMER_FORCE = 0.9;         // impulse per frame when moving fast
+        const MOUSE_SMOOTH = 0.4;          // smooth hammer angle
+
+        // --------------------------------------------------------------
+        // WORLD OBJECTS (static obstacles)
+        let obstacles = [];
+
+        // --------------------------------------------------------------
+        // PLAYER (pot & hammer)
+        let player = {
+            // position
+            x: 400, y: 300,
+            vx: 0, vy: 0,
+            radius: 22,          // pot radius
+            mass: 1.0,
+
+            // hammer state
+            hammerAngle: 0,       // current angle (radians)
+            targetAngle: 0,       // angle we want (mouse follow)
+            hammerLength: HAMMER_LENGTH,
+            hammerTipX: 0,        // world coord (updated each frame)
+            hammerTipY: 0
+        };
+
+        // camera offset
+        let cameraX = 0, cameraY = 0;
+
+        // mouse world position (updated)
+        let mouseWorldX = 400, mouseWorldY = 300;
+
+        // helper: convert canvas mouse to world
+        function canvasToWorld(canvasX, canvasY) {
+            return {
+                x: canvasX + cameraX,
+                y: canvasY + cameraY
+            };
+        }
+
+        // update hammer target angle based on mouse (relative to player)
+        function updateTargetAngleFromMouse(mouseX, mouseY) {
+            const dx = mouseX - player.x;
+            const dy = mouseY - player.y;
+            player.targetAngle = Math.atan2(dy, dx);
+        }
+
+        // --------------------------------------------------------------
+        // CREATE TERRAIN (obstacles) – rocky platforms, steep hills
+        function buildWorld() {
+            obstacles = [];
+
+            // base ground (very wide flat area so player never falls to void)
+            obstacles.push({ x: 400, y: 540, w: 2000, h: 40 });  // huge floor
+
+            // --- left climbing section (rocky steps)
+            obstacles.push({ x: 300, y: 480, w: 60, h: 20 });
+            obstacles.push({ x: 220, y: 430, w: 60, h: 20 });
+            obstacles.push({ x: 150, y: 380, w: 50, h: 20 });
+            obstacles.push({ x: 180, y: 320, w: 80, h: 20 });
+            obstacles.push({ x: 280, y: 270, w: 60, h: 20 });
+            obstacles.push({ x: 360, y: 220, w: 80, h: 20 });   // mid high
+            obstacles.push({ x: 450, y: 160, w: 70, h: 20 });     // higher
+            obstacles.push({ x: 550, y: 120, w: 90, h: 25 });     // platform
+            obstacles.push({ x: 670, y: 80, w: 70, h: 25 });      // near top
+            obstacles.push({ x: 780, y: 60, w: 60, h: 25 });
+            // right side tricky
+            obstacles.push({ x: 830, y: 110, w: 50, h: 20 });
+            obstacles.push({ x: 760, y: 160, w: 50, h: 20 });
+            obstacles.push({ x: 690, y: 210, w: 50, h: 20 });
+            obstacles.push({ x: 620, y: 270, w: 50, h: 20 });
+            obstacles.push({ x: 550, y: 330, w: 50, h: 20 });
+            obstacles.push({ x: 480, y: 390, w: 70, h: 20 });
+            obstacles.push({ x: 400, y: 440, w: 80, h: 20 });  // back down
+
+            // a few isolated blocks to create overhangs (no full caves)
+            obstacles.push({ x: 200, y: 200, w: 50, h: 20 });
+            obstacles.push({ x: 320, y: 150, w: 50, h: 20 });
+            obstacles.push({ x: 500, y: 400, w: 50, h: 20 });  // mid
+        }
+        buildWorld(); // initial
+
+        // --------------------------------------------------------------
+        // COLLISION DETECTION (AABB vs circle)
+        function clamp(value, min, max) {
+            return Math.min(max, Math.max(min, value));
+        }
+
+        function handleCollisions() {
+            // simple iterative push (2 iterations for stability)
+            for (let iter = 0; iter < 3; iter++) {
+                for (let ob of obstacles) {
+                    // half extents
+                    let hw = ob.w / 2;
+                    let hh = ob.h / 2;
+                    let obLeft = ob.x - hw;
+                    let obRight = ob.x + hw;
+                    let obTop = ob.y - hh;
+                    let obBottom = ob.y + hh;
+
+                    // closest point on rectangle to circle
+                    let closestX = clamp(player.x, obLeft, obRight);
+                    let closestY = clamp(player.y, obTop, obBottom);
+                    let dx = player.x - closestX;
+                    let dy = player.y - closestY;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    let rad = player.radius;
+
+                    if (dist < rad && dist > 0.001) {
+                        // penetration
+                        let overlap = rad - dist;
+                        let nx = dx / dist;
+                        let ny = dy / dist;
+
+                        // push player out
+                        player.x += nx * overlap;
+                        player.y += ny * overlap;
+
+                        // velocity response (simple bounce + friction)
+                        let vRel = player.vx * nx + player.vy * ny; // normal velocity
+                        if (vRel < 0) { // moving into obstacle
+                            player.vx -= vRel * nx * 0.5; // dampen
+                            player.vy -= vRel * ny * 0.5;
+                        }
+
+                        // tangential friction
+                        let tx = -ny, ty = nx;
+                        let vt = player.vx * tx + player.vy * ty;
+                        player.vx -= vt * tx * 0.2;
+                        player.vy -= vt * ty * 0.2;
+
+                        // small additional separation
+                    }
+                }
+            }
+        }
+
+        // --------------------------------------------------------------
+        // APPLY HAMMER IMPULSE (based on mouse movement relative to previous frame)
+        let lastMouseWorld = { x: player.x + 30, y: player.y }; // initial guess
+
+        function applyHammerForce() {
+            // hammer tip world position (from player + angle)
+            const tipX = player.x + Math.cos(player.hammerAngle) * player.hammerLength;
+            const tipY = player.y + Math.sin(player.hammerAngle) * player.hammerLength;
+            player.hammerTipX = tipX;
+            player.hammerTipY = tipY;
+
+            // we use mouse world position (not tip) but tip corresponds to mouse anchor
+            // idea: if hammer tip (which follows mouse with smoothing) moves fast,
+            // apply opposite impulse to player
+
+            // get current mouse world (from last known canvas event)
+            const currentTipWorldX = mouseWorldX;
+            const currentTipWorldY = mouseWorldY;
+
+            // compute delta of mouse (like velocity)
+            const dx = currentTipWorldX - lastMouseWorld.x;
+            const dy = currentTipWorldY - lastMouseWorld.y;
+            const speed = Math.sqrt(dx*dx + dy*dy);
+
+            // direction from player to mouse
+            const dirToMouseX = currentTipWorldX - player.x;
+            const dirToMouseY = currentTipWorldY - player.y;
+            const distToMouse = Math.sqrt(dirToMouseX*dirToMouseX + dirToMouseY*dirToMouseY);
+            if (distToMouse < 5) return; // too close
+
+            const ndx = dirToMouseX / distToMouse;
+            const ndy = dirToMouseY / distToMouse;
+
+            // impulse magnitude: factor of mouse speed and how aligned is pull direction
+            const dot = (dx * ndx + dy * ndy); // positive when moving away from player (pulling)
+            if (dot > 0) {
+                // player gets impulse toward opposite of mouse movement? Actually hammer pulls player
+                // Getting Over It: moving hammer quickly lifts the pot.
+                // apply force in direction of hammer (from player to mouse) but also based on speed
+                const impulseScale = Math.min(speed * 0.6, 7.0) * HAMMER_FORCE;
+                player.vx += ndx * impulseScale * 0.15;
+                player.vy += ndy * impulseScale * 0.15;
+            } else {
+                // pushing? small effect
+                const pushScale = Math.min(speed * 0.3, 3.0);
+                player.vx -= ndx * pushScale * 0.05;
+                player.vy -= ndy * pushScale * 0.05;
+            }
+
+            // update last mouse world
+            lastMouseWorld.x = currentTipWorldX;
+            lastMouseWorld.y = currentTipWorldY;
+        }
+
+        // --------------------------------------------------------------
+        // UPDATE PHYSICS (fixed timestep)
+        function physicsUpdate() {
+            if (!gameRunning) return;
+
+            // gravity
+            player.vy += GRAVITY;
+
+            // air/ground friction
+            let touchingGround = false;
+            for (let ob of obstacles) {
+                let hw = ob.w/2, hh = ob.h/2;
+                let distX = Math.abs(player.x - ob.x);
+                let distY = Math.abs(player.y - ob.y);
+                if (distX < hw + player.radius && distY < hh + player.radius) {
+                    touchingGround = true;
+                    break;
+                }
+            }
+            if (touchingGround) {
+                player.vx *= GROUND_FRICTION;
+                player.vy *= GROUND_FRICTION;
+            } else {
+                player.vx *= FRICTION_AIR;
+                player.vy *= FRICTION_AIR;
+            }
+
+            // apply hammer forces (based on mouse movement)
+            applyHammerForce();
+
+            // euler integration
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // collision response
+            handleCollisions();
+
+            // safety: if player falls below world (y>650) -> restart (progress lost)
+            if (player.y > 650) {
+                resetGame();
+                return;
+            }
+
+            // update camera (follow player, with smooth)
+            cameraX = player.x - canvas.width/2;
+            cameraY = player.y - canvas.height/2;
+        }
+
+        // --------------------------------------------------------------
+        // SMOOTH HAMMER ANGLE (toward target)
+        function updateHammerVisual() {
+            // smooth interpolation
+            let diff = player.targetAngle - player.hammerAngle;
+            // normalize diff to [-PI, PI]
+            while (diff > Math.PI) diff -= 2*Math.PI;
+            while (diff < -Math.PI) diff += 2*Math.PI;
+            player.hammerAngle += diff * MOUSE_SMOOTH;
+
+            // hammer tip world for rendering
+            player.hammerTipX = player.x + Math.cos(player.hammerAngle) * player.hammerLength;
+            player.hammerTipY = player.y + Math.sin(player.hammerAngle) * player.hammerLength;
+        }
+
+        // --------------------------------------------------------------
+        // RENDERING
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(-cameraX, -cameraY);  // camera follow
+
+            // draw background (dark subtle gradient)
+            ctx.fillStyle = '#16121e';
+            ctx.fillRect(cameraX-50, cameraY-50, canvas.width+200, canvas.height+200);
+
+            // draw obstacles (rocks/cliffs) – flat cartoon style
+            ctx.shadowColor = '#b89eff';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            for (let ob of obstacles) {
+                ctx.fillStyle = '#6f5e8c';
+                ctx.beginPath();
+                ctx.roundRect(ob.x - ob.w/2, ob.y - ob.h/2, ob.w, ob.h, 10);
+                ctx.fill();
+                // edge highlight
+                ctx.fillStyle = '#9580b8';
+                ctx.beginPath();
+                ctx.roundRect(ob.x - ob.w/2 + 2, ob.y - ob.h/2 - 2, ob.w-4, 6, 4);
+                ctx.fill();
+            }
+
+            // draw player (pot + character)
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = '#765fa8';
+
+            // pot (body)
+            ctx.fillStyle = '#3d3552';
+            ctx.beginPath();
+            ctx.ellipse(player.x, player.y-2, player.radius, player.radius*0.9, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#2a2338';
+            ctx.beginPath();
+            ctx.ellipse(player.x, player.y-6, player.radius-3, player.radius*0.7, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            // character (simple eyes)
+            ctx.fillStyle = '#f2e9d0';
+            ctx.beginPath();
+            ctx.arc(player.x-8, player.y-16, 5, 0, Math.PI*2);
+            ctx.arc(player.x+8, player.y-16, 5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#1e1a2a';
+            ctx.beginPath();
+            ctx.arc(player.x-8, player.y-18, 2, 0, Math.PI*2);
+            ctx.arc(player.x+8, player.y-18, 2, 0, Math.PI*2);
+            ctx.fill();
+
+            // hammer
+            ctx.shadowBlur = 25;
+            ctx.strokeStyle = '#bbaed0';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(player.x, player.y-8);
+            ctx.lineTo(player.hammerTipX, player.hammerTipY);
+            ctx.stroke();
+            // hammer head
+            ctx.fillStyle = '#cbbde2';
+            ctx.beginPath();
+            ctx.ellipse(player.hammerTipX, player.hammerTipY, 12, 8, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#a58ec9';
+            ctx.beginPath();
+            ctx.ellipse(player.hammerTipX, player.hammerTipY, 8, 5, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.restore();
+
+            // update height UI (based on Y, lower Y = higher)
+            let heightMeters = Math.max(0, Math.floor((600 - player.y) * 0.3));
+            heightSpan.textContent = heightMeters;
+        }
+
+        // roundRect utility
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.moveTo(x + r, y);
+            this.lineTo(x + w - r, y);
+            this.quadraticCurveTo(x + w, y, x + w, y + r);
+            this.lineTo(x + w, y + h - r);
+            this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            this.lineTo(x + r, y + h);
+            this.quadraticCurveTo(x, y + h, x, y + h - r);
+            this.lineTo(x, y + r);
+            this.quadraticCurveTo(x, y, x + r, y);
+            return this;
+        };
+
+        // --------------------------------------------------------------
+        // RESET GAME (keep obstacles same)
+        function resetGame() {
+            player.x = 400; player.y = 300;
+            player.vx = 0; player.vy = 0;
+            player.hammerAngle = 0; player.targetAngle = 0;
+            cameraX = player.x - canvas.width/2;
+            cameraY = player.y - canvas.height/2;
+            lastMouseWorld = { x: player.x + 30, y: player.y };
+            mouseWorldX = player.x + 30; mouseWorldY = player.y;
+            gameRunning = true;
+        }
+
+        // --------------------------------------------------------------
+        // MOUSE HANDLING
+        let mouseCanvasX = 500, mouseCanvasY = 300;
+
+        function updateMouseWorldFromCanvas() {
+            const world = canvasToWorld(mouseCanvasX, mouseCanvasY);
+            mouseWorldX = world.x;
+            mouseWorldY = world.y;
+            updateTargetAngleFromMouse(mouseWorldX, mouseWorldY);
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseCanvasX = (e.clientX - rect.left) * scaleX;
+            mouseCanvasY = (e.clientY - rect.top) * scaleY;
+            updateMouseWorldFromCanvas();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            // gentle, no update
+        });
+
+        // restart button
+        document.getElementById('restartButton').addEventListener('click', () => {
+            resetGame();
+        });
+
+        // --------------------------------------------------------------
+        // GAME LOOP (fixed timestep + render)
+        function gameLoop(now) {
+            requestAnimationFrame(gameLoop);
+            if (!lastTimestamp) {
+                lastTimestamp = now;
+                return;
+            }
+
+            let delta = Math.min(100, now - lastTimestamp); // max 100ms
+            lastTimestamp = now;
+
+            accumulator += delta;
+
+            // fixed physics updates
+            while (accumulator >= FIXED_DT) {
+                if (gameRunning) {
+                    physicsUpdate();
+                    updateHammerVisual();
+                }
+                accumulator -= FIXED_DT;
+            }
+
+            // always render
+            draw();
+        }
+
+        // initial camera
+        cameraX = player.x - canvas.width/2;
+        cameraY = player.y - canvas.height/2;
+        lastMouseWorld = { x: player.x + 30, y: player.y };
+        mouseWorldX = player.x + 30; mouseWorldY = player.y;
+        requestAnimationFrame(gameLoop);
+    })();
+</script>
+</body>
+</html>

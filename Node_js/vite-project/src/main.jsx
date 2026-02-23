@@ -16,12 +16,12 @@ import Color_bt from './Class_compo.jsx'
 import Fav_color from './Hook_fun.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* <App /> */}
-    {/* <Mycomp/> */}
-    {/* <Home /> */}
-    {/* <Std /> */}
-    {/* <SimpleStudentTable/> */}
-    {/* <Color_bt/> */}
+    <App />
+    <Mycomp/>
+    <Home />
+    <Std />
+    <SimpleStudentTable/>
+    <Color_bt/>
     <Fav_color/>
     
   </StrictMode>,
