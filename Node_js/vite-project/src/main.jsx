@@ -14,15 +14,17 @@ import Std from './Class_comp.jsx'
 import SimpleStudentTable from './event.jsx'
 import Color_bt from './Class_compo.jsx'
 import Fav_color from './Hook_fun.jsx'
+import Timer from './use_effect_hook.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    {/* <App />
     <Mycomp/>
     <Home />
     <Std />
     <SimpleStudentTable/>
     <Color_bt/>
-    <Fav_color/>
+    <Fav_color/> */}
+    <Timer/>
     
   </StrictMode>,
 )
