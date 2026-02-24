@@ -15,6 +15,8 @@ import SimpleStudentTable from './event.jsx'
 import Color_bt from './Class_compo.jsx'
 import Fav_color from './Hook_fun.jsx'
 import Timer from './use_effect_hook.jsx'
+import Counter from '../fun_counter.jsx'
+import Color_bg from '../eve2.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* <App />
@@ -23,8 +25,11 @@ createRoot(document.getElementById('root')).render(
     <Std />
     <SimpleStudentTable/>
     <Color_bt/>
-    <Fav_color/> */}
+    <Fav_color/> 
     <Timer/>
+    <Counter/>
+    */}
+    <Color_bg/>
     
   </StrictMode>,
 )
