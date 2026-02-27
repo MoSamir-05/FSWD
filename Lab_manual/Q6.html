@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Circle Area & Perimeter</title>
+</head>
+<body>
+
+<h2>Area and Perimeter of Circle</h2>
+
+<script>
+
+// Area Arrow Function
+const area = (r) => Math.PI * r * r;
+
+// Perimeter Arrow Function
+const perimeter = (r) => 2 * Math.PI * r;
+
+// Testing
+let radius = 7;
+
+document.write("Radius: " + radius + "<br>");
+document.write("Area: " + area(radius).toFixed(2) + "<br>");
+document.write("Perimeter: " + perimeter(radius).toFixed(2));
+
+</script>
+
+</body>
+</html>

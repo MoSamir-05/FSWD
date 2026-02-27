@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Factorial using Map</title>
+</head>
+<body>
+
+<h2>Factorial of Array Elements</h2>
+
+<script>
+
+// Original Array
+let numbers = [3, 4, 5];
+
+// Function to calculate factorial
+const factorial = (n) => {
+    let fact = 1;
+    for(let i = 1; i <= n; i++) {
+        fact *= i;
+    }
+    return fact;
+};
+
+// Using map()
+let result = numbers.map(num => factorial(num));
+
+document.write("Original Array: " + numbers + "<br>");
+document.write("Factorial Array: " + result);
+
+</script>
+
+</body>
+</html>

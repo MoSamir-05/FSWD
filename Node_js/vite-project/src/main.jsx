@@ -17,6 +17,9 @@ import Fav_color from './Hook_fun.jsx'
 import Timer from './use_effect_hook.jsx'
 import Counter from '../fun_counter.jsx'
 import Color_bg from '../eve2.jsx'
+import Component1 from '../With_useContext_Hook.jsx'
+import Component11 from '../With_useContext_Hook.jsx'
+import University from '../uni_detail.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* <App />
@@ -28,8 +31,10 @@ createRoot(document.getElementById('root')).render(
     <Fav_color/> 
     <Timer/>
     <Counter/>
-    */}
     <Color_bg/>
+    <Component11/>
+    */}
+    <University/>
     
   </StrictMode>,
 )

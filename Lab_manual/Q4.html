@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cricketer Inheritance Example</title>
+</head>
+<body>
+
+<h2>Cricketer Information</h2>
+
+<script>
+
+// Parent Class
+class Cricketer {
+
+    constructor(cid, cname, country) {
+        this.cid = cid;
+        this.cname = cname;
+        this.country = country;
+    }
+
+    setCountry(cid, cname, country) {
+        this.cid = cid;
+        this.cname = cname;
+        this.country = country;
+    }
+
+    getCountry() {
+        document.write("Cricketer ID: " + this.cid + "<br>");
+        document.write("Name: " + this.cname + "<br>");
+        document.write("Country: " + this.country + "<br>");
+    }
+}
+
+// Child Class 1 - Bowler
+class Bowler extends Cricketer {
+
+    constructor(cid, cname, country, wickets, matches) {
+        super(cid, cname, country);
+        this.wickets = wickets;
+        this.matches = matches;
+    }
+
+    setBowler(wickets, matches) {
+        this.wickets = wickets;
+        this.matches = matches;
+    }
+
+    getBowler() {
+        this.getCountry();
+        document.write("Wickets: " + this.wickets + "<br>");
+        document.write("Matches: " + this.matches + "<br><br>");
+    }
+}
+
+// Child Class 2 - Batsman
+class Batsman extends Cricketer {
+
+    constructor(cid, cname, country, runs, matches) {
+        super(cid, cname, country);
+        this.runs = runs;
+        this.matches = matches;
+    }
+
+    setBatsman(runs, matches) {
+        this.runs = runs;
+        this.matches = matches;
+    }
+
+    getBatsman() {
+        this.getCountry();
+        document.write("Runs: " + this.runs + "<br>");
+        document.write("Matches: " + this.matches + "<br><br>");
+    }
+}
+
+// Object of Bowler
+let bowler1 = new Bowler(1, "Bumrah", "India", 250, 120);
+bowler1.getBowler();
+
+// Object of Batsman
+let batsman1 = new Batsman(2, "Virat Kohli", "India", 13000, 270);
+batsman1.getBatsman();
+
+</script>
+
+</body>
+</html>

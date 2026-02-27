@@ -1,13 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Company Class in JS</title>
 </head>
 <body>
-    <script>
-        
-    </script>
+
+<h2>Company Details</h2>
+
+<script>
+
+class Company {
+
+    constructor() {
+        this.name = "";
+        this.type = "";
+        this.profit = 0;
+    }
+
+    // Set Method
+    setCompany(n, t, p) {
+        this.name = n;
+        this.type = t;
+        this.profit = p;
+    }
+
+    // Get Method
+    getCompany() {
+        document.write("Company Name: " + this.name + "<br>");
+        document.write("Company Type: " + this.type + "<br>");
+        document.write("Company Profit: " + this.profit + "<br>");
+    }
+}
+
+// Object Create
+let obj = new Company();
+
+// Set Data
+obj.setCompany("Infosys", "IT Company", 800000);
+
+// Show Data
+obj.getCompany();
+
+</script>
+
 </body>
 </html>
