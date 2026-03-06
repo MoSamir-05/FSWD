@@ -8,6 +8,7 @@ import Dashboard from './Question/Q15.jsx';
 import Q16 from './Question/Q16.jsx';
 import Department from './Question/Q17.jsx';
 import StateDetail from './Question/Q18.jsx';
+import Counter from './Question/Q19.jsx';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     {/* <App /> 
@@ -19,8 +20,10 @@ createRoot(document.getElementById('root')).render(
     <Dashboard/>
     <Q16/>
     <Department/>
-    */}
     <StateDetail/>
+    <Counter/>
+    */}
+    
 
   </StrictMode>,
 )
