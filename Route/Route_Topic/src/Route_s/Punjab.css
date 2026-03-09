@@ -1,0 +1,28 @@
+.punjab-container{
+    max-width: 850px;
+    margin: 60px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.punjab-title{
+    text-align: center;
+    font-size: 38px;
+    color: #b22222;
+    margin-bottom: 20px;
+}
+
+.punjab-text{
+    font-size: 17px;
+    line-height: 1.8;
+    color: #444;
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+.punjab-text:hover{
+    color: #b22222;
+    transition: 0.3s;
+}

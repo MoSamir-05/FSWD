@@ -1,0 +1,33 @@
+body{
+    background: linear-gradient(135deg,#1e3c72,#2a5298);
+    font-family: Arial, sans-serif;
+}
+
+.chennai-container{
+    max-width: 850px;
+    margin: 60px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.chennai-title{
+    text-align: center;
+    font-size: 38px;
+    color: #1e3c72;
+    margin-bottom: 20px;
+}
+
+.chennai-text{
+    font-size: 17px;
+    line-height: 1.8;
+    color: #444;
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+.chennai-text:hover{
+    color: #2a5298;
+    transition: 0.3s;
+}
