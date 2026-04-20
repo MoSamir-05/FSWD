@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>STAR — Paint & Texture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<style>
+  /* ... poora CSS yahan same hai ... */
+  :root {
+    --clay: #C4A882;
+    --clay-dark: #8B7355;
+    --sand: #F5EFE6;
+    --ink: #1A1612;
+    --ink-soft: #2D2820;
+    --chalk: #FDFAF6;
+    --sage: #7A8C74;
+    --rust: #B85C38;
+    --rust-light: #E8784A;
+    --charcoal: #3D3530;
+    --mist: #E8E0D5;
+    --gold: #C9A84C;
+    --accent: #D4622A;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--chalk);
+    color: var(--ink);
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* ===== CUSTOM CURSOR ===== */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: multiply;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 40px; height: 40px;
+    border: 1.5px solid var(--clay);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+    opacity: 0.6;
+  }
+
+  /* ===== LOADER ===== */
+  .loader {
+    position: fixed;
+    inset: 0;
+    background: var(--ink);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .loader-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 300;
+    color: var(--chalk);
+    letter-spacing: 0.3em;
+    overflow: hidden;
+  }
+  .loader-text span {
+    display: inline-block;
+    animation: letterDrop 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .loader-bar {
+    width: 200px;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .loader-bar::after {
+    content: '';
+    position: absolute;
+    left: -100%;
+    top: 0; bottom: 0;
+    width: 100%;
+    background: var(--clay);
+    animation: loaderProgress 1.8s ease forwards;
+  }
+  @keyframes loaderProgress { to { left: 0; } }
+  @keyframes letterDrop {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .loader.hidden {
+    animation: loaderFade 0.6s ease forwards;
+  }
+  @keyframes loaderFade {
+    to { opacity: 0; pointer-events: none; }
+  }
+
+  /* ===== NAVBAR ===== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 1.5rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.4s ease;
+  }
+  nav.scrolled {
+    background: rgba(253,250,246,0.92);
+    backdrop-filter: blur(20px);
+    padding: 1rem 4rem;
+    border-bottom: 1px solid rgba(196,168,130,0.2);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 3rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    position: relative;
+    transition: color 0.3s;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0; right: 100%;
+    height: 1px;
+    background: var(--accent);
+    transition: right 0.3s ease;
+  }
+  .nav-links a:hover::after { right: 0; }
+  .nav-cta {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.8rem;
+    border: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: 30px;
+  }
+  .nav-cta:hover {
+    background: var(--ink);
+    color: var(--chalk);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 4rem 8rem 8rem;
+    position: relative;
+    z-index: 2;
+  }
+  .hero-tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s 2.2s ease forwards;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--clay);
+  }
+  .hero-h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(3.5rem, 6vw, 6rem);
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .hero-h1 .line {
+    display: block;
+    opacity: 0;
+    transform: translateY(100%);
+    animation: lineReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .hero-h1 .line:nth-child(1) { animation-delay: 2.4s; }
+  .hero-h1 .line:nth-child(2) { animation-delay: 2.6s; }
+  .hero-h1 .line:nth-child(3) { animation-delay: 2.8s; }
+  .hero-h1 em { font-style: italic; color: var(--accent); }
+
+  @keyframes lineReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--charcoal);
+    max-width: 380px;
+    margin-bottom: 3rem;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s 3.1s ease forwards;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.8s 3.3s ease forwards;
+  }
+  .btn-primary {
+    padding: 1.1rem 2.8rem;
+    background: var(--ink);
+    color: var(--chalk);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--ink);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    border-radius: 40px;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 40px;
+  }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-primary span { position: relative; z-index: 1; }
+  .btn-ghost {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: gap 0.3s;
+  }
+  .btn-ghost:hover { gap: 1.2rem; }
+  .btn-ghost .arrow { font-size: 1.1rem; }
+
+  .hero-right {
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeIn 1.2s 2s ease forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .hero-right-inner {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    transform: scale(1.05);
+    animation: scaleDown 1.5s 2.2s ease forwards;
+  }
+  @keyframes scaleDown { to { transform: scale(1); } }
+  .hero-panel {
+    overflow: hidden;
+    position: relative;
+    border-radius: 12px;
+  }
+  .hero-panel img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 8s ease;
+    transform: scale(1.1);
+    animation: slowZoom 8s 2.5s ease forwards;
+  }
+  @keyframes slowZoom { to { transform: scale(1); } }
+
+  .hero-swatch {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+    opacity: 0;
+    animation: fadeUp 0.8s 3.5s ease forwards;
+  }
+  .swatch {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.5);
+    transition: transform 0.3s, border-color 0.3s;
+    cursor: none;
+  }
+  .swatch:hover { transform: scale(1.25); border-color: white; }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeIn 1s 3.8s ease forwards;
+    z-index: 5;
+  }
+  .scroll-indicator span {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--clay);
+    writing-mode: vertical-rl;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--clay), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { transform: scaleY(1); opacity: 0.7; }
+    50% { transform: scaleY(1.3); opacity: 1; }
+  }
+
+  /* ===== REVEAL ANIMATIONS ===== */
+  .reveal { opacity: 0; transform: translateY(60px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-left { opacity: 0; transform: translateX(-60px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal-left.visible { opacity: 1; transform: translateX(0); }
+  .reveal-right { opacity: 0; transform: translateX(60px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+  .reveal-scale { opacity: 0; transform: scale(0.9); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal-scale.visible { opacity: 1; transform: scale(1); }
+  .delay-1 { transition-delay: 0.1s; }
+  .delay-2 { transition-delay: 0.2s; }
+  .delay-3 { transition-delay: 0.3s; }
+  .delay-4 { transition-delay: 0.4s; }
+  .delay-5 { transition-delay: 0.5s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== MARQUEE ===== */
+  .marquee-section {
+    padding: 1.5rem 0;
+    background: var(--ink);
+    overflow: hidden;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 4rem;
+    animation: marquee 20s linear infinite;
+    white-space: nowrap;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  .marquee-item {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: rgba(253,250,246,0.5);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-shrink: 0;
+  }
+  .marquee-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--clay);
+    flex-shrink: 0;
+  }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* ===== ABOUT STRIP ===== */
+  .about-strip {
+    padding: 8rem 8rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8rem;
+    align-items: center;
+    background: var(--chalk);
+  }
+  .section-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-tag::before { content: ''; width: 30px; height: 1px; background: var(--clay); }
+  .section-h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 2rem;
+  }
+  .section-h2 em { font-style: italic; color: var(--accent); }
+  .section-p {
+    font-size: 0.95rem;
+    font-weight: 300;
+    line-height: 1.9;
+    color: var(--charcoal);
+    margin-bottom: 1.5rem;
+  }
+  .about-img-wrap {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .about-img-wrap img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    display: block;
+  }
+  .about-badge {
+    position: absolute;
+    bottom: -2rem;
+    right: -2rem;
+    width: 130px; height: 130px;
+    background: var(--accent);
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Cormorant Garamond', serif;
+    text-align: center;
+  }
+  .about-badge .num {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .about-badge .label {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 0.3rem;
+  }
+
+  /* ===== PRODUCTS GRID ===== */
+  .products {
+    padding: 8rem 6rem;
+    background: var(--sand);
+  }
+  .products-header {
+    text-align: center;
+    margin-bottom: 5rem;
+  }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  .product-card {
+    background: var(--chalk);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 24px;
+  }
+  .product-card:hover { transform: translateY(-8px); }
+  .product-card:first-child {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+  }
+  .product-img {
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4/5;
+  }
+  .product-card:first-child .product-img { aspect-ratio: auto; min-height: 400px; }
+  .product-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .product-card:hover .product-img img { transform: scale(1.08); }
+  .product-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26,22,18,0.5) 0%, transparent 50%);
+  }
+  .product-info {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .product-card:first-child .product-info {
+    padding: 3rem;
+    justify-content: center;
+    background: var(--ink);
+    color: var(--chalk);
+  }
+  .product-cat {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 0.75rem;
+  }
+  .product-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: inherit;
+  }
+  .product-card:first-child .product-name { font-size: 2.5rem; color: var(--chalk); }
+  .product-desc {
+    font-size: 0.85rem;
+    font-weight: 300;
+    line-height: 1.7;
+    color: rgba(253,250,246,0.6);
+    margin-bottom: 2rem;
+  }
+  .product-link {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--clay);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: gap 0.3s;
+    width: fit-content;
+  }
+  .product-link:hover { gap: 1.5rem; }
+  .product-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    color: var(--clay-dark);
+    margin-bottom: 1rem;
+  }
+
+  /* ===== TEXTURE SHOWCASE ===== */
+  .textures {
+    padding: 8rem 0;
+    background: var(--ink);
+    overflow: hidden;
+  }
+  .textures-inner {
+    padding: 0 6rem;
+  }
+  .textures-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 4rem;
+  }
+  .textures-header .section-h2 { color: var(--chalk); margin-bottom: 0; }
+  .textures-header .section-tag { color: rgba(196,168,130,0.7); }
+  .textures-header .section-tag::before { background: var(--clay); opacity: 0.7; }
+  .textures-scroll-wrap {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 2rem;
+    scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .textures-scroll-wrap::-webkit-scrollbar { display: none; }
+  .texture-card {
+    min-width: 300px;
+    scroll-snap-align: start;
+    position: relative;
+    cursor: none;
+    flex-shrink: 0;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+  .texture-card img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .texture-card:hover img { transform: scale(1.04); }
+  .texture-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(26,22,18,0.9) 0%, transparent 100%);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.4s ease;
+  }
+  .texture-card:hover .texture-overlay { opacity: 1; transform: translateY(0); }
+  .texture-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--chalk);
+    font-weight: 300;
+  }
+  .texture-finish {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--clay);
+  }
+
+  /* ===== STATS ===== */
+  .stats {
+    padding: 6rem 8rem;
+    background: var(--chalk);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    border-top: 1px solid var(--mist);
+    border-bottom: 1px solid var(--mist);
+  }
+  .stat-item {
+    text-align: center;
+    padding: 2rem 1rem;
+    position: relative;
+  }
+  .stat-item + .stat-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 60%;
+    background: var(--mist);
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 3.5rem;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .stat-num span { color: var(--accent); }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--clay-dark);
+    line-height: 1.6;
+  }
+
+  /* ===== COLOR PALETTE SHOWCASE ===== */
+  .palette {
+    padding: 8rem 6rem;
+    background: var(--sand);
+  }
+  .palette-header { text-align: center; margin-bottom: 4rem; }
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+  }
+  .palette-swatch {
+    aspect-ratio: 3/5;
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 16px;
+  }
+  .palette-swatch:hover { transform: scale(1.05) translateY(-8px); }
+  .palette-swatch::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 1rem 0.75rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: white;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  .palette-swatch:hover::after { transform: translateY(0); }
+
+  /* ===== PROCESS ===== */
+  .process {
+    padding: 8rem 8rem;
+    background: var(--chalk);
+  }
+  .process-header { margin-bottom: 5rem; }
+  .process-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+    position: relative;
+  }
+  .process-steps::before {
+    content: '';
+    position: absolute;
+    top: 2.5rem;
+    left: calc(50px);
+    right: calc(50px);
+    height: 1px;
+    background: var(--mist);
+    z-index: 0;
+  }
+  .step {
+    position: relative;
+    z-index: 1;
+  }
+  .step-num {
+    width: 50px; height: 50px;
+    border: 1px solid var(--clay);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--clay-dark);
+    background: var(--chalk);
+    margin-bottom: 1.5rem;
+    transition: all 0.4s;
+  }
+  .step:hover .step-num {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    transform: scale(1.1);
+  }
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+  .step-desc {
+    font-size: 0.85rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--charcoal);
+  }
+
+  /* ===== TESTIMONIALS ===== */
+  .testimonials {
+    padding: 8rem 8rem;
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .testimonials::before {
+    content: '"';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30rem;
+    color: rgba(196,168,130,0.05);
+    position: absolute;
+    top: -4rem;
+    left: 4rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .testimonials-header { margin-bottom: 4rem; }
+  .testimonials-header .section-h2 { color: var(--chalk); }
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  .testimonial {
+    padding: 2.5rem;
+    border: 1px solid rgba(196,168,130,0.2);
+    position: relative;
+    transition: border-color 0.3s, transform 0.4s;
+    border-radius: 24px;
+  }
+  .testimonial:hover {
+    border-color: var(--clay);
+    transform: translateY(-4px);
+  }
+  .testimonial-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1.7;
+    color: rgba(253,250,246,0.8);
+    margin-bottom: 2rem;
+  }
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .author-avatar {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: var(--clay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--chalk);
+  }
+  .author-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--chalk);
+    letter-spacing: 0.05em;
+  }
+  .author-role {
+    font-size: 0.72rem;
+    color: var(--clay);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 0.2rem;
+  }
+
+  /* ===== CTA SECTION ===== */
+  .cta-section {
+    padding: 10rem 6rem;
+    background: var(--sand);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(8rem, 18vw, 20rem);
+    font-weight: 600;
+    color: rgba(196,168,130,0.06);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: -0.02em;
+  }
+  .cta-section .section-h2 {
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    position: relative;
+  }
+  .cta-section .section-p {
+    max-width: 500px;
+    margin: 0 auto 3rem;
+    position: relative;
+  }
+  .cta-btns {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    position: relative;
+  }
+  .btn-accent {
+    padding: 1.1rem 2.8rem;
+    background: var(--accent);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--accent);
+    transition: all 0.35s ease;
+    border-radius: 40px;
+  }
+  .btn-accent:hover {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--ink-soft);
+    padding: 5rem 8rem 3rem;
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 4rem;
+    padding-bottom: 4rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 3rem;
+  }
+  .footer-brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: 0.15em;
+    color: var(--chalk);
+    margin-bottom: 1.5rem;
+  }
+  .footer-desc {
+    font-size: 0.85rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: rgba(253,250,246,0.4);
+    max-width: 280px;
+  }
+  .footer-col h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 1.5rem;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li {
+    margin-bottom: 0.75rem;
+  }
+  .footer-col ul a {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: rgba(253,250,246,0.5);
+    text-decoration: none;
+    transition: color 0.3s;
+    letter-spacing: 0.03em;
+  }
+  .footer-col ul a:hover { color: var(--chalk); }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-copy {
+    font-size: 0.75rem;
+    color: rgba(253,250,246,0.25);
+    letter-spacing: 0.05em;
+  }
+  .footer-social {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .footer-social a {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(253,250,246,0.4);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .footer-social a:hover { color: var(--clay); }
+
+  /* ===== FLOATING PAINT BLOB ANIMATION ===== */
+  .blob {
+    position: absolute;
+    border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%;
+    filter: blur(40px);
+    opacity: 0.15;
+    pointer-events: none;
+    animation: blobMorph 8s ease-in-out infinite alternate;
+  }
+  @keyframes blobMorph {
+    0% { border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%; }
+    50% { border-radius: 45% 55% 60% 40% / 52% 66% 34% 48%; }
+    100% { border-radius: 60% 40% 38% 62% / 42% 55% 45% 58%; }
+  }
+
+  /* ===== RESPONSIVE (COMPREHENSIVE) ===== */
+  @media (max-width: 1280px) {
+    .hero-left { padding: 8rem 3rem 4rem 4rem; }
+    .about-strip, .stats, .products, .palette, .testimonials, .cta-section, .process, footer { padding-left: 3rem; padding-right: 3rem; }
+  }
+
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-right { height: 60vh; position: relative; min-height: 500px; }
+    .hero-left { padding: 10rem 2.5rem 4rem; text-align: left; }
+    .hero-btns { justify-content: flex-start; }
+    .scroll-indicator { display: none; }
+    .about-strip { grid-template-columns: 1fr; gap: 3rem; }
+    .products-grid { grid-template-columns: 1fr; }
+    .product-card:first-child { grid-template-columns: 1fr; }
+    .palette-grid { grid-template-columns: repeat(3, 1fr); }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .footer-top { grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat-item + .stat-item::before { display: none; }
+    nav { padding: 1rem 2rem; flex-wrap: wrap; gap: 1rem; }
+    .nav-links { order: 3; width: 100%; justify-content: center; gap: 2rem; }
+    .textures-inner { padding: 0 2rem; }
+    .process-steps { grid-template-columns: 1fr 1fr; }
+    .process-steps::before { display: none; }
+    .testimonials::before { font-size: 20rem; left: 2rem; }
+  }
+
+  @media (max-width: 768px) {
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+    .hero-right-inner { gap: 2px; }
+    .hero-swatch { bottom: 1.5rem; flex-wrap: wrap; justify-content: center; width: 90%; }
+    .swatch { width: 28px; height: 28px; }
+    .about-badge { width: 100px; height: 100px; bottom: -1rem; right: -1rem; }
+    .about-badge .num { font-size: 1.5rem; }
+    .stats { grid-template-columns: 1fr; padding: 4rem 1.5rem; }
+    .palette-grid { grid-template-columns: repeat(2, 1fr); }
+    .process-steps { grid-template-columns: 1fr; gap: 2rem; }
+    .footer-top { grid-template-columns: 1fr; gap: 2rem; }
+    .footer-bottom { flex-direction: column; gap: 1.5rem; align-items: flex-start; }
+    .cta-btns { flex-direction: column; align-items: stretch; }
+    .btn-primary, .btn-accent { text-align: center; }
+    .textures-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    nav { padding: 1rem 1.5rem; }
+    .nav-cta { padding: 0.5rem 1.2rem; }
+  }
+
+  @media (max-width: 480px) {
+    .nav-links { gap: 1rem; flex-wrap: wrap; }
+    .nav-links a { font-size: 0.7rem; }
+    .hero-h1 { font-size: 3rem; }
+    .hero-desc { font-size: 0.9rem; }
+    .hero-btns { flex-direction: column; align-items: stretch; width: 100%; }
+    .hero-btns .btn-primary, .hero-btns .btn-ghost { text-align: center; justify-content: center; }
+    .section-h2 { font-size: 2rem; }
+    .about-img-wrap img { height: 350px; }
+    .palette-grid { grid-template-columns: 1fr; }
+    .texture-card { min-width: 260px; }
+    .texture-card img { height: 320px; }
+    .product-info { padding: 1.5rem; }
+    .product-card:first-child .product-info { padding: 2rem; }
+    .testimonial { padding: 1.8rem; }
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .product-card:hover, .palette-swatch:hover, .texture-card:hover { transform: none; }
+    .product-card:hover .product-img img, .texture-card:hover img { transform: none; }
+    .texture-overlay { opacity: 1; transform: translateY(0); background: linear-gradient(to top, rgba(26,22,18,0.8) 0%, transparent 120%); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Loader -->
+<div class="loader" id="loader">
+  <div class="loader-text">
+    <span style="animation-delay:0s">S</span><span style="animation-delay:0.05s">T</span><span style="animation-delay:0.1s">A</span><span style="animation-delay:0.15s">R</span><span style="animation-delay:0.2s"></span><span style="animation-delay:0.25s">P</span><span style="animation-delay:0.3s">A</span><span style="animation-delay:0.35s">I</span><span style="animation-delay:0.4s">N</span><span style="animation-delay:0.45s">T</span>
+  </div>
+  <div class="loader-bar"></div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">STAR PAINT</a>
+  <ul class="nav-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#textures">Textures</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get a Sample</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-left">
+    <div class="hero-tag">Premium Surfaces Since 2004</div>
+    <h1 class="hero-h1">
+      <span class="line">Where Walls</span>
+      <span class="line">Become <em>Art</em></span>
+      <span class="line">Itself</span>
+    </h1>
+    <p class="hero-desc">Luxury paints and artisan textures that transform spaces into living canvases. Crafted for those who see beyond colour.</p>
+    <div class="hero-btns">
+      <a href="#products" class="btn-primary"><span>Explore Collection</span></a>
+      <a href="#process" class="btn-ghost">Our Process <span class="arrow">→</span></a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-right-inner">
+      <div class="hero-panel">
+        <img src="https://assets.birlaopus.com/is/image/grasimindustries/sandstone?ts=1740737552654&dpr=off" alt="texture">
+      </div>
+      <div class="hero-panel">
+        <img src="https://images.unsplash.com/photo-1543248939-ff40856f65d4?w=600&q=80" alt="paint">
+      </div>
+      <div class="hero-panel">
+        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80" alt="interior">
+      </div>
+      <div class="hero-panel">
+        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&q=80" alt="color">
+      </div>
+    </div>
+    <div class="hero-swatch">
+      <div class="swatch" style="background:#C4A882"></div>
+      <div class="swatch" style="background:#B85C38"></div>
+      <div class="swatch" style="background:#7A8C74"></div>
+      <div class="swatch" style="background:#3D3530"></div>
+      <div class="swatch" style="background:#D4622A"></div>
+      <div class="swatch" style="background:#C9A84C"></div>
+    </div>
+  </div>
+
+  <div class="scroll-indicator" style="left: 8rem; transform: none;">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item">Premium Paints <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Venetian Plaster <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Metallic Finishes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Textured Coatings <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Eco Formulas <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Tinting <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Matte & Silk <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Premium Paints <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Venetian Plaster <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Metallic Finishes <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Textured Coatings <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Eco Formulas <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Custom Tinting <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Matte & Silk <span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about-strip" id="about">
+  <div>
+    <div class="section-tag reveal">Our Story</div>
+    <h2 class="section-h2 reveal delay-1">Crafting <em>Extraordinary</em><br>Surfaces Since 2004</h2>
+    <p class="section-p reveal delay-2">Born from a passion for artisanal craftsmanship, STAR Paint began as a small atelier in the heart of the design district. Today, we're trusted by leading architects and interior designers across the country.</p>
+    <p class="section-p reveal delay-3">Every product we create undergoes rigorous quality testing, ensuring not just beauty, but longevity. We believe your walls deserve the same level of care as every other design decision in your space.</p>
+    <a href="#" class="btn-ghost reveal delay-4" style="margin-top: 1.5rem;">Read Our Story <span class="arrow">→</span></a>
+  </div>
+  <div class="about-img-wrap reveal-right">
+    <img src="https://nipponpaint.co.in/wp-content/uploads/2021/07/seattt.jpg" alt="about star paint">
+    <div class="about-badge">
+      <div class="num">20+</div>
+      <div class="label">Years of<br>Excellence</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products" id="products">
+  <div class="products-header">
+    <div class="section-tag reveal" style="justify-content: center; padding-left: 0;">
+      <span style="width:30px;height:1px;background:var(--clay);display:inline-block;margin-right:1rem;"></span>
+      Our Collections
+    </div>
+    <h2 class="section-h2 reveal delay-1" style="max-width:600px;margin:0 auto;">Colours That <em>Define</em> the Space</h2>
+  </div>
+  <div class="products-grid">
+    <div class="product-card reveal">
+      <div class="product-img">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" alt="Heritage Collection">
+        <div class="product-img-overlay"></div>
+      </div>
+      <div class="product-info">
+        <div class="product-cat">Flagship Series</div>
+        <h3 class="product-name">The Heritage<br>Collection</h3>
+        <p class="product-desc">Our most celebrated line — 120 hand-curated tones inspired by centuries of architectural mastery. Deep pigments, extraordinary coverage.</p>
+        <a href="#" class="product-link">Explore Collection →</a>
+      </div>
+    </div>
+
+    <div class="product-card reveal delay-1">
+      <div class="product-img">
+        <img src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=500&q=80" alt="Matte Luxe">
+      </div>
+      <div class="product-info">
+        <div class="product-cat">Interior Paints</div>
+        <h3 class="product-name" style="color:var(--ink)">Matte Luxe Series</h3>
+        <div class="product-price">From ₹850 / litre</div>
+        <a href="#" class="product-link" style="color:var(--clay-dark)">View Range →</a>
+      </div>
+    </div>
+
+    <div class="product-card reveal delay-2">
+      <div class="product-img">
+        <img src="https://images.squarespace-cdn.com/content/v1/6465e9f0c32fb30720d59d36/1700000288852-ZOH2WC44RIT5FYJRDV0Q/Mediterranean-Style-Hallway-Design-with-Interior-Venetian-Render-zephyr-and-stone.JPEG" alt="Venetian Plaster">
+      </div>
+      <div class="product-info">
+        <div class="product-cat">Textured Finishes</div>
+        <h3 class="product-name" style="color:var(--ink)">Venetian Plaster</h3>
+        <div class="product-price">From ₹1,400 / kg</div>
+        <a href="#" class="product-link" style="color:var(--clay-dark)">View Range →</a>
+      </div>
+    </div>
+
+    <div class="product-card reveal delay-3">
+      <div class="product-img">
+        <img src="https://5.imimg.com/data5/SELLER/Default/2026/1/577144838/ZD/DQ/JQ/98555884/champagne-gilded-accent-walls-for-designer-homes-500x500.png" alt="Metallic">
+      </div>
+      <div class="product-info">
+        <div class="product-cat">Metallic & Shimmer</div>
+        <h3 class="product-name" style="color:var(--ink)">Gilded Interiors</h3>
+        <div class="product-price">From ₹1,200 / litre</div>
+        <a href="#" class="product-link" style="color:var(--clay-dark)">View Range →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEXTURES -->
+<section class="textures" id="textures">
+  <div class="textures-inner">
+    <div class="textures-header">
+      <div>
+        <div class="section-tag reveal">Texture Library</div>
+        <h2 class="section-h2 reveal delay-1">Feel <em>Every</em> Surface</h2>
+      </div>
+      <a href="#" class="btn-ghost reveal" style="color:var(--clay)">Browse All Textures →</a>
+    </div>
+  </div>
+  <div class="textures-scroll-wrap" style="padding: 0 6rem 2rem;">
+    <div class="texture-card reveal">
+      <img src="https://images.jdmagicbox.com/quickquotes/images_main/texture-wall-paint-2216373920-jveb1r6h.jpg" alt="Stucco">
+      <div class="texture-overlay">
+        <div class="texture-finish">Interior Finish</div>
+        <div class="texture-name">Artisan Stucco</div>
+      </div>
+    </div>
+    <div class="texture-card reveal delay-1">
+      <img src="https://img.staticmb.com/mbcontent/images/uploads/2025/9/Wall-Paint-Texture-Designs-first-1.jpg" alt="Concrete">
+      <div class="texture-overlay">
+        <div class="texture-finish">Industrial Series</div>
+        <div class="texture-name">Micro Concrete</div>
+      </div>
+    </div>
+    <div class="texture-card reveal delay-2">
+      <img src="https://images.unsplash.com/photo-1620503374956-c942862f0372?w=400&q=80" alt="Marble">
+      <div class="texture-overlay">
+        <div class="texture-finish">Luxury Series</div>
+        <div class="texture-name">Marmorino</div>
+      </div>
+    </div>
+    <div class="texture-card reveal delay-3">
+      <img src="https://images.unsplash.com/photo-1545315003-c5ad6226c272?w=400&q=80" alt="Travertine">
+      <div class="texture-overlay">
+        <div class="texture-finish">Stone Effects</div>
+        <div class="texture-name">Travertine Effect</div>
+      </div>
+    </div>
+    <div class="texture-card reveal delay-4">
+      <img src="https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=400&q=80" alt="Silk">
+      <div class="texture-overlay">
+        <div class="texture-finish">Premium Finish</div>
+        <div class="texture-name">Silk Sheen</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-item reveal">
+    <div class="stat-num counter" data-target="500">0<span>+</span></div>
+    <div class="stat-label">Colours<br>Available</div>
+  </div>
+  <div class="stat-item reveal delay-1">
+    <div class="stat-num counter" data-target="12000">0<span>+</span></div>
+    <div class="stat-label">Projects<br>Completed</div>
+  </div>
+  <div class="stat-item reveal delay-2">
+    <div class="stat-num counter" data-target="40">0<span>+</span></div>
+    <div class="stat-label">Cities<br>Served</div>
+  </div>
+  <div class="stat-item reveal delay-3">
+    <div class="stat-num" style="font-size:2.5rem">ISO<span>9001</span></div>
+    <div class="stat-label">Certified<br>Quality</div>
+  </div>
+</div>
+
+<!-- COLOUR PALETTE -->
+<section class="palette">
+  <div class="palette-header">
+    <div class="section-tag reveal" style="justify-content:center;"><span style="width:30px;height:1px;background:var(--clay);display:inline-block;margin-right:1rem;"></span>Signature Palette</div>
+    <h2 class="section-h2 reveal delay-1" style="max-width:500px;margin:0 auto;">The World in <em>Colour</em></h2>
+  </div>
+  <div class="palette-grid">
+    <div class="palette-swatch reveal" data-name="Sahara Dawn" style="background:#D4A07A;"></div>
+    <div class="palette-swatch reveal delay-1" data-name="Terracotta" style="background:#B85C38;"></div>
+    <div class="palette-swatch reveal delay-2" data-name="Forest Mist" style="background:#7A8C74;"></div>
+    <div class="palette-swatch reveal delay-3" data-name="Midnight Ink" style="background:#1A1612;"></div>
+    <div class="palette-swatch reveal delay-4" data-name="Antique Gold" style="background:#C9A84C;"></div>
+    <div class="palette-swatch reveal delay-5" data-name="Raw Chalk" style="background:#F0EAE0;border:1px solid #ddd;"></div>
+    <div class="palette-swatch reveal" data-name="Burnt Sienna" style="background:#8B4513;"></div>
+    <div class="palette-swatch reveal delay-1" data-name="Dusty Rose" style="background:#C4A0A0;"></div>
+    <div class="palette-swatch reveal delay-2" data-name="Graphite" style="background:#3D3530;"></div>
+    <div class="palette-swatch reveal delay-3" data-name="Sage Green" style="background:#8FAB87;"></div>
+    <div class="palette-swatch reveal delay-4" data-name="Deep Ocean" style="background:#2C4A6E;"></div>
+    <div class="palette-swatch reveal delay-5" data-name="Rust Ember" style="background:#D4622A;"></div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process" id="process">
+  <div class="process-header">
+    <div class="section-tag reveal">How It Works</div>
+    <h2 class="section-h2 reveal delay-1">From <em>Vision</em> to Wall</h2>
+  </div>
+  <div class="process-steps">
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <div class="step-title">Consultation</div>
+      <p class="step-desc">Our design experts visit your space, understand your vision, and assess the surfaces needing transformation.</p>
+    </div>
+    <div class="step reveal delay-1">
+      <div class="step-num">02</div>
+      <div class="step-title">Colour Matching</div>
+      <p class="step-desc">Using our proprietary tinting system, we create your perfect shade — or you choose from 500+ curated tones.</p>
+    </div>
+    <div class="step reveal delay-2">
+      <div class="step-num">03</div>
+      <div class="step-title">Application</div>
+      <p class="step-desc">Our certified applicators bring products to life with mastery — ensuring flawless, enduring results.</p>
+    </div>
+    <div class="step reveal delay-3">
+      <div class="step-num">04</div>
+      <div class="step-title">Final Reveal</div>
+      <p class="step-desc">We walk you through the finished space, ensuring every surface exceeds your expectations before we leave.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="testimonials-header">
+    <div class="section-tag reveal" style="color:rgba(196,168,130,0.7)"><span style="width:30px;height:1px;background:var(--clay);display:inline-block;margin-right:1rem;"></span>What They Say</div>
+    <h2 class="section-h2 reveal delay-1" style="color:var(--chalk)">Stories of <em>Transformation</em></h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial reveal">
+      <p class="testimonial-text">"STAR Paint transformed our hotel lobby into something truly breathtaking. The Venetian plaster finish drew gasps from guests on opening night."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">RK</div>
+        <div>
+          <div class="author-name">Rahul Kapoor</div>
+          <div class="author-role">Interior Architect, Mumbai</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial reveal delay-2">
+      <p class="testimonial-text">"The depth of colour in their Heritage collection is unlike anything I've seen. These paints genuinely change as the light shifts through the day."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">PS</div>
+        <div>
+          <div class="author-name">Priya Sharma</div>
+          <div class="author-role">Design Director, Delhi</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial reveal delay-4">
+      <p class="testimonial-text">"Professional, precise, and absolutely premium. Our residence now feels like a boutique property from the pages of Architectural Digest."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">AM</div>
+        <div>
+          <div class="author-name">Arjun Mehta</div>
+          <div class="author-role">Homeowner, Ahmedabad</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="cta-bg-text">COLOR</div>
+  <div class="section-tag reveal" style="justify-content:center;"><span style="width:30px;height:1px;background:var(--clay);display:inline-block;margin-right:1rem;"></span>Get Started</div>
+  <h2 class="section-h2 reveal delay-1" style="text-align:center;max-width:700px;margin:0 auto 1.5rem;">Ready to <em>Transform</em><br>Your Space?</h2>
+  <p class="section-p reveal delay-2">Request a free consultation and sample kit. Let our experts help you discover the perfect palette for your project.</p>
+  <div class="cta-btns reveal delay-3">
+    <a href="#" class="btn-accent">Request Free Samples</a>
+    <a href="#" class="btn-primary"><span>Book Consultation</span></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">STAR PAINT</div>
+      <p class="footer-desc">Premium paints and artisan textures. Crafted for spaces that inspire. Trusted by designers, loved by homeowners.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Products</h4>
+      <ul>
+        <li><a href="#">Interior Paints</a></li>
+        <li><a href="#">Exterior Paints</a></li>
+        <li><a href="#">Venetian Plaster</a></li>
+        <li><a href="#">Metallic Finishes</a></li>
+        <li><a href="#">Texture Coatings</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Our Process</a></li>
+        <li><a href="#">Projects</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">Find a Store</a></li>
+        <li><a href="#">Trade Programme</a></li>
+        <li><a href="#">Get Samples</a></li>
+        <li><a href="#">hello@starpaint.in</a></li>
+        <li><a href="#">+91 98765 43210</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2025 STAR Paint & Texture. All rights reserved.</p>
+    <div class="footer-social">
+      <a href="#">Instagram</a>
+      <a href="#">Pinterest</a>
+      <a href="#">Houzz</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ===== LOADER (FIXED - force to top) =====
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+    
+    // Force scroll to top after loader, ignoring any hash in URL
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'instant'
+      });
+      
+      // Also clear the hash from URL without triggering scroll
+      if (window.location.hash) {
+        history.replaceState(null, null, ' ');
+      }
+    }, 100);
+    
+    setTimeout(() => {
+      document.getElementById('loader').style.display = 'none';
+    }, 700);
+  }, 2000);
+});
+
+// ===== SMOOTH SCROLL FOR NAVIGATION =====
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (href === "#" || href === "") return;
+    
+    const targetElement = document.querySelector(href);
+    if (targetElement) {
+      e.preventDefault();
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  });
+});
+
+// ===== CURSOR =====
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+if (cursor && cursorRing) {
+  let mouseX = 0, mouseY = 0;
+  let ringX = 0, ringY = 0;
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.left = mouseX - 5 + 'px';
+    cursor.style.top = mouseY - 5 + 'px';
+  });
+  function animateCursor() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    cursorRing.style.left = ringX - 20 + 'px';
+    cursorRing.style.top = ringY - 20 + 'px';
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+  document.querySelectorAll('a, button, .swatch, .texture-card, .palette-swatch').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'scale(2)';
+      cursorRing.style.transform = 'scale(1.5)';
+      cursorRing.style.opacity = '1';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'scale(1)';
+      cursorRing.style.transform = 'scale(1)';
+      cursorRing.style.opacity = '0.6';
+    });
+  });
+}
+
+// ===== NAVBAR SCROLL =====
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 80) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+});
+
+// ===== SCROLL REVEAL =====
+const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+reveals.forEach(el => revealObs.observe(el));
+
+// ===== COUNTER ANIMATION =====
+const counters = document.querySelectorAll('.counter');
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.dataset.target);
+      const suffix = el.querySelector('span') ? el.querySelector('span').outerHTML : '';
+      let current = 0;
+      const step = target / 60;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        const display = target >= 1000
+          ? Math.floor(current).toLocaleString()
+          : Math.floor(current);
+        el.innerHTML = display + suffix;
+      }, 25);
+      counterObs.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+counters.forEach(el => counterObs.observe(el));
+
+// ===== PARALLAX =====
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  document.querySelectorAll('.hero-panel img').forEach((img, i) => {
+    const dir = i % 2 === 0 ? 1 : -1;
+    img.style.transform = `translateY(${scrollY * 0.04 * dir}px) scale(1)`;
+  });
+});
+
+// ===== TEXTURE HORIZONTAL DRAG SCROLL =====
+const scrollWrap = document.querySelector('.textures-scroll-wrap');
+let isDown = false;
+let startX;
+let scrollLeft;
+if (scrollWrap) {
+  scrollWrap.addEventListener('mousedown', (e) => {
+    isDown = true;
+    scrollWrap.style.cursor = 'grabbing';
+    startX = e.pageX - scrollWrap.offsetLeft;
+    scrollLeft = scrollWrap.scrollLeft;
+  });
+  scrollWrap.addEventListener('mouseleave', () => { isDown = false; scrollWrap.style.cursor = 'default'; });
+  scrollWrap.addEventListener('mouseup', () => { isDown = false; scrollWrap.style.cursor = 'default'; });
+  scrollWrap.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - scrollWrap.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollWrap.scrollLeft = scrollLeft - walk;
+  });
+}
+
+// ===== TEXT SPLIT HOVER (product names) =====
+document.querySelectorAll('.product-name').forEach(el => {
+  el.style.transition = 'transform 0.4s ease';
+});
+</script>
+
+</body>
+</html>
